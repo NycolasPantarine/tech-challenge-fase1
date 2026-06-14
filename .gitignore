@@ -18,6 +18,7 @@ build/
 models/*.pkl
 models/*.pt
 models/*.pth
+!models/mlp_model.pt
 mlruns/
 mlartifacts/
 mlflow.db
