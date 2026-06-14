@@ -35,3 +35,8 @@ testpaths = ["tests"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src"]
+
+[dependency-groups]
+dev = [
+    "ipykernel>=6.29.0",
+]
