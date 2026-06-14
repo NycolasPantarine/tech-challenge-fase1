@@ -20,6 +20,7 @@ models/*.pt
 models/*.pth
 mlruns/
 mlartifacts/
+mlflow.db
 
 # Dados brutos (grandes demais para o GitHub)
 data/raw/*
