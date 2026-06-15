@@ -57,31 +57,26 @@ final de cada sessão de trabalho.
 
 ---
 
-## Bloco 3 — Engenharia (em andamento) 🔶 (15/06)
+## Bloco 3 — Engenharia ✅ (15/06)
 
 Referência: Etapa 3 do Tech Challenge (Eng. Software Aulas 01-05, Bibliotecas
 Aula 02, APIs Aulas 01-04)
 
 - [x] Refatorar lógica dos notebooks em módulos `src/`
-  - [x] `src/features/preprocessing.py` — preprocessing/pipeline reutilizável
-        (NUMERIC_FEATURES, CATEGORICAL_FEATURES, build_preprocessor,
-        split_features_target)
-  - [x] `src/models/mlp.py` — definição da classe `ChurnMLP`
-  - [x] `src/models/predict.py` — load_preprocessor, load_logreg_pipeline,
-        load_mlp_model, predict_churn_logreg, predict_churn_mlp
-  - [x] `src/api/` — aplicação FastAPI (schemas.py + main.py)
-- [x] API FastAPI:
-  - [x] `/health` — healthcheck (testado, retorna models_loaded=true)
-  - [x] `/predict` — inferência, validação com Pydantic (Literal types)
-        (testado: logreg AUC consistente, erro 422 em input inválido)
-  - [x] Logging estruturado (sem `print()`)
-  - [x] Middleware de latência (log_request_latency)
-  - [x] Suporte a model=logreg (padrão) ou model=mlp via query param
-- [ ] Pipeline reprodutível (sklearn + transformadores custom, se necessário)
-- [ ] Testes com pytest:
-  - [ ] Smoke test (a aplicação sobe sem erro)
-  - [ ] Schema test (pandera — valida formato dos dados de entrada)
-  - [ ] API test (endpoints respondem corretamente)
-- [ ] Configuração de qualidade:
-  - [ ] `ruff` configurado e sem erros
-  - [ ] Makefile (lint, test, run)
+  - [x] `src/features/preprocessing.py` — build_preprocessor, split_features_target
+  - [x] `src/models/mlp.py` — classe ChurnMLP
+  - [x] `src/models/predict.py` — load/predict para logreg e mlp
+  - [x] `src/api/schemas.py` — CustomerFeatures, PredictionResponse, HealthResponse
+  - [x] `src/api/main.py` — FastAPI com lifespan, middleware, /health, /predict
+- [x] API FastAPI funcional e testada:
+  - [x] `/health` → `{"status": "ok", "models_loaded": true}`
+  - [x] `/predict` → predição com logreg (padrão) ou mlp via query param
+  - [x] Validação Pydantic com Literal types (422 em input inválido)
+  - [x] Logging estruturado (sem print())
+  - [x] Middleware de latência
+- [x] Testes automatizados — 12 testes, todos passando:
+  - [x] `tests/test_smoke.py` — 4 testes (preprocessor, mlp, split, artefatos)
+  - [x] `tests/test_schema.py` — 3 testes (schema, nulos, distribuição churn)
+  - [x] `tests/test_api.py` — 5 testes (health, predict logreg/mlp, erros 400/422)
+- [x] `ruff` configurado e sem erros (`make lint` → All checks passed!)
+- [x] Makefile funcional: `make install`, `make lint`, `make test`, `make run`

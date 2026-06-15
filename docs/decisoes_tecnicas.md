@@ -190,3 +190,67 @@ de fato cancelam **não são identificados** pelo modelo (falsos negativos).
 
 *(documento em construção — próximas seções: Regressão Logística, MLP,
 comparação de modelos, etc.)*
+
+## 11. Arquitetura da API — FastAPI + Pydantic
+
+**Decisão:** FastAPI como framework de inferência, com validação de entrada
+via Pydantic e schemas tipados.
+
+**Motivo:**
+- FastAPI gera documentação interativa automaticamente (`/docs`) — facilita
+  testes manuais e integração com outros sistemas
+- Pydantic com `Literal` types garante validação explícita de cada campo —
+  erros de entrada são rejeitados com 422 antes de chegar ao modelo
+- `lifespan` para carregamento dos modelos — artefatos carregados uma única
+  vez no startup, não a cada requisição
+- Middleware de latência registra tempo de resposta de cada requisição no log
+  — observabilidade básica sem dependências externas
+
+**Decisão de modelo padrão:** `/predict` usa `logreg` por padrão (query
+param `model=logreg`), com suporte opcional a `model=mlp`. Reflete a
+recomendação técnica documentada (seção 9): desempenho equivalente, menor
+complexidade operacional.
+
+---
+
+## 12. Estratégia de testes
+
+**3 camadas de teste, 12 testes no total:**
+
+- **Smoke tests** (`test_smoke.py`) — validam que os componentes carregam
+  e instanciam corretamente, independente de dados reais. Detectam problemas
+  de importação, arquivos ausentes, ou incompatibilidade de arquitetura.
+
+- **Schema tests** (`test_schema.py`) — validam o contrato dos dados
+  processados usando `pandera`. Protegem contra mudanças silenciosas no
+  dataset (colunas renomeadas, distribuição alterada, valores nulos
+  inesperados).
+
+- **API tests** (`test_api.py`) — testam os endpoints de ponta a ponta
+  usando `TestClient` do FastAPI. Cobrem caminhos felizes (logreg, mlp,
+  health) e caminhos de erro (parâmetro inválido → 400, schema inválido
+  → 422).
+
+**Ferramentas:** `pytest` para execução, `pandera.pandas` para validação
+de schema, `httpx`/`TestClient` para simulação de requisições HTTP.
+
+**Execução:** `make test` roda todos os 12 testes. `make lint` verifica
+qualidade com `ruff` (zero erros).
+
+---
+
+## 13. Qualidade de código
+
+**`ruff`** configurado no `pyproject.toml` (regras E, F, I):
+- E → erros de estilo (PEP 8), incluindo linha máxima de 88 caracteres
+- F → erros lógicos (imports não usados, variáveis indefinidas)
+- I → ordenação de imports
+
+**`Makefile`** encapsula os comandos principais do projeto:
+- `make install` → `uv sync` (instala dependências)
+- `make lint` → `ruff check src/ tests/`
+- `make test` → `pytest tests/ -v`
+- `make run` → `uvicorn src.api.main:app --reload`
+
+Qualquer pessoa que clonar o repositório consegue instalar, verificar e
+rodar o projeto com 3 comandos, sem conhecer os detalhes internos.
