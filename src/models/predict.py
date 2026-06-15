@@ -68,7 +68,8 @@ def predict_churn_mlp(
         Tupla (predicao, probabilidade), onde predicao é 0 ou 1.
     """
     processed = preprocessor.transform(data)
-    tensor = torch.tensor(processed.toarray() if hasattr(processed, "toarray") else processed, dtype=torch.float32)
+    array = processed.toarray() if hasattr(processed, "toarray") else processed
+    tensor = torch.tensor(array, dtype=torch.float32)
 
     with torch.no_grad():
         logits = model(tensor)

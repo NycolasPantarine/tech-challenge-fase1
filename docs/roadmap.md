@@ -57,53 +57,31 @@ final de cada sessão de trabalho.
 
 ---
 
-## Bloco 3 — Engenharia (próxima sessão) ⬜
+## Bloco 3 — Engenharia (em andamento) 🔶 (15/06)
 
 Referência: Etapa 3 do Tech Challenge (Eng. Software Aulas 01-05, Bibliotecas
 Aula 02, APIs Aulas 01-04)
 
-- [ ] Refatorar lógica dos notebooks em módulos `src/`
-  - [ ] `src/features/` — preprocessing/pipeline reutilizável
-  - [ ] `src/models/` — definição da classe `ChurnMLP`, funções de treino/avaliação
-  - [ ] `src/api/` — aplicação FastAPI
+- [x] Refatorar lógica dos notebooks em módulos `src/`
+  - [x] `src/features/preprocessing.py` — preprocessing/pipeline reutilizável
+        (NUMERIC_FEATURES, CATEGORICAL_FEATURES, build_preprocessor,
+        split_features_target)
+  - [x] `src/models/mlp.py` — definição da classe `ChurnMLP`
+  - [x] `src/models/predict.py` — load_preprocessor, load_logreg_pipeline,
+        load_mlp_model, predict_churn_logreg, predict_churn_mlp
+  - [x] `src/api/` — aplicação FastAPI (schemas.py + main.py)
+- [x] API FastAPI:
+  - [x] `/health` — healthcheck (testado, retorna models_loaded=true)
+  - [x] `/predict` — inferência, validação com Pydantic (Literal types)
+        (testado: logreg AUC consistente, erro 422 em input inválido)
+  - [x] Logging estruturado (sem `print()`)
+  - [x] Middleware de latência (log_request_latency)
+  - [x] Suporte a model=logreg (padrão) ou model=mlp via query param
 - [ ] Pipeline reprodutível (sklearn + transformadores custom, se necessário)
 - [ ] Testes com pytest:
   - [ ] Smoke test (a aplicação sobe sem erro)
   - [ ] Schema test (pandera — valida formato dos dados de entrada)
   - [ ] API test (endpoints respondem corretamente)
-- [ ] API FastAPI:
-  - [ ] `/health` — healthcheck
-  - [ ] `/predict` — inferência, validação com Pydantic
-  - [ ] Logging estruturado (sem `print()`)
-  - [ ] Middleware de latência
 - [ ] Configuração de qualidade:
   - [ ] `ruff` configurado e sem erros
   - [ ] Makefile (lint, test, run)
-
----
-
-## Bloco 4 — Fechamento ⬜
-
-Referência: Etapa 4 do Tech Challenge
-
-- [ ] Model Card completo (`docs/model_card.md`) — performance, limitações,
-      vieses, cenários de falha
-- [ ] Plano de monitoramento (métricas, alertas, playbook de resposta)
-- [ ] Decisão de arquitetura de deploy (batch vs. real-time) + justificativa
-- [ ] README final (setup, execução, arquitetura)
-- [ ] Roteiro do vídeo STAR (baseado em `docs/decisoes_tecnicas.md`)
-- [ ] Gravação do vídeo (5 min, método STAR)
-- [ ] (Opcional/bônus) Deploy em nuvem (Render/Railway/AWS/Azure/GCP)
-
----
-
-## Notas para próximas sessões
-
-- Projeto vive em `C:\dev\tech-challenge-fase1` (NÃO no OneDrive — caminho
-  com acentos quebra o `.venv` no Windows)
-- Para abrir: `cd C:\dev\tech-challenge-fase1` → `code .`
-- Para rodar scripts: `python src/caminho/arquivo.py` (uv resolve o ambiente
-  automaticamente)
-- MLflow UI: `uv run mlflow ui --backend-store-uri sqlite:///mlflow.db`
-  (sempre da raiz do projeto)
-- Kernel do Jupyter: `tech-challenge-fase1 (3.11.9)`

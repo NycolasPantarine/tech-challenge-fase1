@@ -2,6 +2,7 @@
 
 import logging
 import time
+from contextlib import asynccontextmanager
 
 import pandas as pd
 from fastapi import FastAPI, HTTPException, Request
@@ -15,20 +16,16 @@ from src.models.predict import (
     predict_churn_mlp,
 )
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
-logger = logging.getLogger(__name__)
-
-app = FastAPI(
-    title="Churn Prediction API",
-    description="API para predição de churn de clientes de telecomunicações",
-    version="0.1.0",
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
 )
+logger = logging.getLogger(__name__)
 
 # Artefatos carregados uma vez, na inicialização
 _artifacts: dict = {}
 
 
-@app.on_event("startup")
 def load_models() -> None:
     """Carrega os modelos e o preprocessor na inicialização da API."""
     logger.info("Carregando artefatos de modelo...")
@@ -36,6 +33,22 @@ def load_models() -> None:
     _artifacts["logreg_pipeline"] = load_logreg_pipeline()
     _artifacts["mlp_model"] = load_mlp_model()
     logger.info("Artefatos carregados com sucesso.")
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Gerencia o ciclo de vida da aplicação: carrega modelos no startup."""
+    load_models()
+    yield
+    _artifacts.clear()
+
+
+app = FastAPI(
+    title="Churn Prediction API",
+    description="API para predição de churn de clientes de telecomunicações",
+    version="0.1.0",
+    lifespan=lifespan,
+)
 
 
 @app.middleware("http")
@@ -90,7 +103,10 @@ def predict(customer: CustomerFeatures, model: str = "logreg") -> PredictionResp
             _artifacts["mlp_model"], _artifacts["preprocessor"], data
         )
 
-    logger.info("Predição realizada: model=%s, churn=%d, proba=%.4f", model, prediction, probability)
+        logger.info(
+        "Predição realizada: model=%s, churn=%d, proba=%.4f",
+        model, prediction, probability,
+        )
 
     return PredictionResponse(
         churn_prediction=prediction,

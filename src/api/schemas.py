@@ -37,8 +37,8 @@ class CustomerFeatures(BaseModel):
     MonthlyCharges: float = Field(ge=0)
     TotalCharges: float = Field(ge=0)
 
-    class Config:
-        json_schema_extra = {
+    model_config = {
+        "json_schema_extra": {
             "example": {
                 "gender": "Female",
                 "SeniorCitizen": 0,
@@ -61,6 +61,7 @@ class CustomerFeatures(BaseModel):
                 "TotalCharges": 29.85,
             }
         }
+    }
 
 
 class PredictionResponse(BaseModel):
