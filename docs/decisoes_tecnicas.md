@@ -36,8 +36,7 @@ mantido (7.043 registros).
   desbalanceamento).
 - Split treino/teste feito com `stratify=y` para preservar a proporção
   73,5%/26,5% em ambos os conjuntos.
-- Validação cruzada (quando aplicada) deve ser estratificada pelo mesmo
-  motivo.
+- Validação cruzada estratificada aplicada pelo mesmo motivo.
 
 ---
 
@@ -87,8 +86,8 @@ majoritária — "não-churn").
   discriminativo)
 
 **Por que isso importa:** define o piso absoluto de referência. Qualquer
-modelo real (Regressão Logística, MLP) precisa superar AUC-ROC = 0.5 de forma
-clara para demonstrar que está aprendendo algo útil dos dados.
+modelo real precisa superar AUC-ROC = 0.5 de forma clara para demonstrar
+que está aprendendo algo útil dos dados.
 
 ---
 
@@ -99,6 +98,7 @@ clara para demonstrar que está aprendendo algo útil dos dados.
 re-execuções — requisito obrigatório do Tech Challenge.
 
 ---
+
 ## 7. Baseline 2 — Regressão Logística
 
 **Configuração:** `LogisticRegression(max_iter=1000, random_state=42)`,
@@ -112,8 +112,9 @@ usando o mesmo pipeline de pré-processamento do Dummy.
 **Interpretação:** ganho expressivo sobre o Dummy — o modelo captura sinal
 real dos dados. O recall de 0.56 significa que 44% dos clientes que
 efetivamente cancelam não são identificados (falsos negativos) — ponto
-relevante para a análise de trade-off de custo (Etapa 2 do desafio), a ser
-revisitado na comparação com a MLP.
+relevante para a análise de trade-off de custo.
+
+---
 
 ## 8. Modelo Central — MLP (PyTorch)
 
@@ -142,44 +143,34 @@ na epoch 6, early stopping disparado na epoch 16.
 
 ## 9. Comparação MLP vs. Baselines — Análise Crítica
 
-| Métrica | Dummy | Regressão Logística | MLP |
-|---|---|---|---|
-| AUC-ROC | 0.50 | 0.8421 | 0.8419 |
-| F1 (churn) | 0.00 | 0.60 | 0.60 |
-| Recall (churn) | 0.00 | 0.56 | 0.58 |
-| Precision (churn) | 0.00 | 0.66 | 0.62 |
-| Accuracy | 0.73 | 0.81 | 0.79 |
+| Métrica | Dummy | Regressão Logística | Random Forest | Gradient Boosting | MLP |
+|---|---|---|---|---|---|
+| AUC-ROC | 0.50 | 0.8421 | 0.8185 | 0.8433 | 0.8419 |
+| F1 (churn) | 0.00 | 0.60 | 0.55 | 0.58 | 0.60 |
+| Recall (churn) | 0.00 | 0.56 | 0.49 | 0.52 | 0.58 |
+| Precision (churn) | 0.00 | 0.66 | 0.63 | 0.67 | 0.62 |
+| Accuracy | 0.73 | 0.81 | 0.79 | 0.80 | 0.79 |
 
-**Achado principal:** a MLP **não superou** a Regressão Logística de forma
-significativa — AUC praticamente idêntico (diferença de 0.0002, dentro da
-margem de ruído).
+**Achado principal:** a MLP não superou a Regressão Logística de forma
+significativa — AUC praticamente idêntico (diferença de 0.0002).
 
-**Análise (trade-off de complexidade vs. ganho):**
+**Análise:**
+1. O problema parece ser predominantemente linear — os principais sinais
+   (tenure baixo, contrato mensal) são relações diretas que um modelo linear
+   já captura bem.
+2. Datasets tabulares de tamanho moderado (~7.000 registros) frequentemente
+   não se beneficiam da capacidade extra de redes neurais.
 
-1. O problema de churn neste dataset parece ser predominantemente **linear
-   ou de baixa interação** — os principais sinais identificados na EDA
-   (tenure baixo, contrato mensal) são relações relativamente diretas, que
-   um modelo linear já captura bem.
-
-2. Datasets tabulares de tamanho moderado (~7.000 registros, 45 features
-   após encoding) frequentemente não se beneficiam da capacidade extra de
-   redes neurais — é um padrão conhecido na literatura de ML: para dados
-   tabulares, modelos lineares e baseados em árvore costumam ser competitivos
-   ou superiores a MLPs.
-
-**Conclusão / recomendação:** para este problema, a Regressão Logística é
-preferível como modelo de produção — desempenho equivalente, maior
-interpretabilidade, menor custo computacional e maior simplicidade de
-manutenção. A MLP permanece no projeto como exigência do desafio e para
-demonstrar competência em PyTorch, mas a recomendação técnica documentada
-é pelo modelo mais simples.
+**Conclusão:** para este problema, a Regressão Logística é preferível como
+modelo de produção — desempenho equivalente, maior interpretabilidade, menor
+custo computacional. A MLP permanece no projeto como exigência do desafio.
 
 ---
 
 ## 10. Trade-off de custo: Falso Positivo vs. Falso Negativo
 
 Com recall ≈ 0.56-0.58 para a classe "churn", entre 42-44% dos clientes que
-de fato cancelam **não são identificados** pelo modelo (falsos negativos).
+de fato cancelam não são identificados pelo modelo (falsos negativos).
 
 **Custo de negócio:**
 - **Falso negativo** (não identificar um cliente que vai cancelar): perda
@@ -187,70 +178,93 @@ de fato cancelam **não são identificados** pelo modelo (falsos negativos).
   retenção.
 - **Falso positivo** (identificar como risco um cliente que não cancelaria):
   custo de uma ação de retenção (ex: desconto, contato) aplicada
+  desnecessariamente — custo menor e recuperável.
 
-*(documento em construção — próximas seções: Regressão Logística, MLP,
-comparação de modelos, etc.)*
+**Implicação:** dado que o custo de um falso negativo tende a ser maior,
+pode ser preferível ajustar o threshold abaixo de 0.5 para aumentar recall
+em troca de menor precision.
 
-## 11. Arquitetura da API — FastAPI + Pydantic
+---
+
+## 11. Ensembles e Validação Cruzada
+
+**Modelos adicionais treinados:** Random Forest (AUC=0.8185) e Gradient
+Boosting (AUC=0.8433) — ambos comparados contra MLP e Regressão Logística.
+
+**Resultado:** Gradient Boosting ficou marginalmente acima (AUC=0.8433 vs
+0.8421 da Regressão Logística), mas a diferença é irrelevante na prática.
+Random Forest ficou abaixo de todos os outros modelos reais.
+
+**Validação cruzada estratificada (5-fold) — Regressão Logística:**
+- AUC por fold: [0.8545, 0.8455, 0.8636, 0.8254, 0.8364]
+- Média: 0.8451 ± 0.0134
+
+Desvio padrão baixo (0.013) confirma que o modelo generaliza de forma
+estável — não depende de um split específico para ter boa performance.
+
+---
+
+## 12. Arquitetura da API — FastAPI + Pydantic
 
 **Decisão:** FastAPI como framework de inferência, com validação de entrada
 via Pydantic e schemas tipados.
 
 **Motivo:**
-- FastAPI gera documentação interativa automaticamente (`/docs`) — facilita
-  testes manuais e integração com outros sistemas
+- FastAPI gera documentação interativa automaticamente (`/docs`)
 - Pydantic com `Literal` types garante validação explícita de cada campo —
   erros de entrada são rejeitados com 422 antes de chegar ao modelo
 - `lifespan` para carregamento dos modelos — artefatos carregados uma única
   vez no startup, não a cada requisição
 - Middleware de latência registra tempo de resposta de cada requisição no log
-  — observabilidade básica sem dependências externas
 
-**Decisão de modelo padrão:** `/predict` usa `logreg` por padrão (query
-param `model=logreg`), com suporte opcional a `model=mlp`. Reflete a
-recomendação técnica documentada (seção 9): desempenho equivalente, menor
-complexidade operacional.
+**Decisão de modelo padrão:** `/predict` usa `logreg` por padrão, com
+suporte opcional a `model=mlp` via query param.
 
 ---
 
-## 12. Estratégia de testes
+## 13. Estratégia de testes
 
 **3 camadas de teste, 12 testes no total:**
 
 - **Smoke tests** (`test_smoke.py`) — validam que os componentes carregam
-  e instanciam corretamente, independente de dados reais. Detectam problemas
-  de importação, arquivos ausentes, ou incompatibilidade de arquitetura.
-
+  e instanciam corretamente, independente de dados reais.
 - **Schema tests** (`test_schema.py`) — validam o contrato dos dados
-  processados usando `pandera`. Protegem contra mudanças silenciosas no
-  dataset (colunas renomeadas, distribuição alterada, valores nulos
-  inesperados).
-
-- **API tests** (`test_api.py`) — testam os endpoints de ponta a ponta
-  usando `TestClient` do FastAPI. Cobrem caminhos felizes (logreg, mlp,
-  health) e caminhos de erro (parâmetro inválido → 400, schema inválido
-  → 422).
-
-**Ferramentas:** `pytest` para execução, `pandera.pandas` para validação
-de schema, `httpx`/`TestClient` para simulação de requisições HTTP.
+  processados usando `pandera`.
+- **API tests** (`test_api.py`) — testam os endpoints de ponta a ponta,
+  cobrindo caminhos felizes e caminhos de erro (400/422).
 
 **Execução:** `make test` roda todos os 12 testes. `make lint` verifica
 qualidade com `ruff` (zero erros).
 
 ---
 
-## 13. Qualidade de código
+## 14. Qualidade de código
 
 **`ruff`** configurado no `pyproject.toml` (regras E, F, I):
-- E → erros de estilo (PEP 8), incluindo linha máxima de 88 caracteres
+- E → erros de estilo (PEP 8), linha máxima de 88 caracteres
 - F → erros lógicos (imports não usados, variáveis indefinidas)
 - I → ordenação de imports
 
-**`Makefile`** encapsula os comandos principais do projeto:
-- `make install` → `uv sync` (instala dependências)
+**`Makefile`** encapsula os comandos principais:
+- `make install` → `uv sync`
 - `make lint` → `ruff check src/ tests/`
 - `make test` → `pytest tests/ -v`
 - `make run` → `uvicorn src.api.main:app --reload`
 
-Qualquer pessoa que clonar o repositório consegue instalar, verificar e
-rodar o projeto com 3 comandos, sem conhecer os detalhes internos.
+---
+
+## 15. Deploy em produção — GCP Cloud Run
+
+**Plataforma:** Google Cloud Platform — Cloud Run (serverless, managed).
+
+**Motivo da escolha:** Cloud Run é a opção mais simples para FastAPI no GCP —
+recebe uma imagem Docker e gera URL pública automaticamente, sem gerenciar
+infraestrutura.
+
+**Configuração:**
+- Imagem Docker baseada em `python:3.11-slim`
+- Memória: 2Gi (necessário para carregar PyTorch)
+- Região: us-central1
+- Acesso: público (`--allow-unauthenticated`)
+
+**URL pública:** `https://churn-api-311138300643.us-central1.run.app`
