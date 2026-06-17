@@ -192,6 +192,18 @@ Acessa `http://127.0.0.1:5000`.
 | pytest | Testes automatizados |
 | ruff | Linting |
 
+## Deploy em produção
+
+A API está disponível publicamente no Google Cloud Run:
+
+**Base URL:** `https://churn-api-311138300643.us-central1.run.app`
+
+| Endpoint | Descrição |
+|---|---|
+| `GET /health` | Status da API |
+| `POST /predict` | Predição de churn |
+| `GET /docs` | Documentação interativa |
+
 ---
 
 ## Documentação adicional
