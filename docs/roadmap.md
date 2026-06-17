@@ -81,7 +81,7 @@ Aula 02, APIs Aulas 01-04)
 - [x] `ruff` configurado e sem erros (`make lint` → All checks passed!)
 - [x] Makefile funcional: `make install`, `make lint`, `make test`, `make run`
 
-## Bloco 4 — Fechamento 🔶 (17/06)
+## Bloco 4 — Fechamento ✅ (17/06)
 
 - [x] Model Card completo (`docs/model_card.md`)
 - [x] ML Canvas (`docs/ml_canvas.md`)
@@ -90,5 +90,5 @@ Aula 02, APIs Aulas 01-04)
 - [x] README final completo com setup, execução e URL de produção
 - [x] Deploy em nuvem — GCP Cloud Run
       URL: https://churn-api-311138300643.us-central1.run.app
-- [ ] Roteiro do vídeo STAR
-- [ ] Gravação do vídeo (5 min, método STAR)
+- [x] Roteiro do vídeo STAR (`docs/roteiro_star.md`)
+- [ ] Gravação do vídeo (5 min, método STAR) — pendente
