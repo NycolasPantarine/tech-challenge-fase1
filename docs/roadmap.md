@@ -14,8 +14,8 @@ final de cada sessão de trabalho.
 |---|---|---|
 | 1. Fundação (EDA + Baselines) | ✅ Concluído | 14/06 |
 | 2. Modelagem (MLP PyTorch) | ✅ Concluído | 14/06 |
-| 3. Engenharia (src/, API, testes) | ⬜ Não iniciado | — |
-| 4. Fechamento (Model Card, README, vídeo) | ⬜ Não iniciado | — |
+| 3. Engenharia (src/, API, testes) | ✅ Concluído | 15/06 |
+| 4. Fechamento (Model Card, README, vídeo) | 🔶 Em andamento | 17/06 |
 
 ---
 
@@ -80,3 +80,15 @@ Aula 02, APIs Aulas 01-04)
   - [x] `tests/test_api.py` — 5 testes (health, predict logreg/mlp, erros 400/422)
 - [x] `ruff` configurado e sem erros (`make lint` → All checks passed!)
 - [x] Makefile funcional: `make install`, `make lint`, `make test`, `make run`
+
+## Bloco 4 — Fechamento 🔶 (17/06)
+
+- [x] Model Card completo (`docs/model_card.md`)
+- [x] ML Canvas (`docs/ml_canvas.md`)
+- [x] Plano de monitoramento (dentro do Model Card)
+- [x] Decisão de arquitetura de deploy (real-time + justificativa)
+- [x] README final completo com setup, execução e URL de produção
+- [x] Deploy em nuvem — GCP Cloud Run
+      URL: https://churn-api-311138300643.us-central1.run.app
+- [ ] Roteiro do vídeo STAR
+- [ ] Gravação do vídeo (5 min, método STAR)
